@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Tymon\JWTAuth\Facades\JWTAuth;
-
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -21,7 +21,15 @@ class LoginController extends Controller
         }
 
         if ($token = JWTAuth::attempt($request->only('email', 'password'))) {
-            return response()->json(compact('token'));
+
+            // Retrieve the expiration time of the token
+            $expiration = Carbon::now()->addMinutes(config('jwt.ttl'))->format('Y-m-d H:i:s');
+
+             // Return the token and its expiration time in the response
+             return response()->json([
+                'token' => $token,
+                'expires_at' => $expiration
+            ]);
         }
 
         return response()->json([
